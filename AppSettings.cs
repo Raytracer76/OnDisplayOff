@@ -2,21 +2,38 @@ using System;
 using System.IO;
 using System.Text.Json;
 
-namespace SleepOnDisplayOff
+namespace OnDisplayOff
 {
     /// <summary>
     /// Defines the possible power management actions that can be performed when the display turns off.
     /// </summary>
-    public enum SleepAction 
-    { 
+    public enum SleepAction
+    {
         /// <summary>Put the computer to sleep (suspend to RAM)</summary>
-        Sleep, 
+        Sleep,
         /// <summary>Hibernate the computer (suspend to disk)</summary>
-        Hibernate, 
+        Hibernate,
         /// <summary>Shutdown the computer completely</summary>
-        Shutdown, 
+        Shutdown,
         /// <summary>Restart the computer</summary>
-        Restart 
+        Restart
+    }
+
+    /// <summary>
+    /// Defines the available time units for the grace period setting.
+    /// </summary>
+    public enum TimeUnit
+    {
+        /// <summary>Milliseconds (1/1000 of a second)</summary>
+        Milliseconds,
+        /// <summary>Seconds</summary>
+        Seconds,
+        /// <summary>Minutes</summary>
+        Minutes,
+        /// <summary>Hours</summary>
+        Hours,
+        /// <summary>Days</summary>
+        Days
     }
 
     /// <summary>
@@ -26,10 +43,30 @@ namespace SleepOnDisplayOff
     public sealed class AppSettings
     {
         /// <summary>
-        /// Grace period in seconds to wait after display turns off before executing the power action.
-        /// Set to 0 for immediate action. Maximum value is 600 seconds (10 minutes).
+        /// Grace period value to wait after display turns off before executing the power action.
+        /// Set to 0 for immediate action. Use with GraceTimeUnit to define the time scale.
         /// </summary>
-        public int GraceSeconds { get; set; } = 60;
+        public int GraceValue { get; set; } = 60;
+
+        /// <summary>
+        /// Time unit for the grace period value. Defaults to seconds for backward compatibility.
+        /// </summary>
+        public TimeUnit GraceTimeUnit { get; set; } = TimeUnit.Seconds;
+
+        /// <summary>
+        /// Legacy property for backward compatibility. Gets/sets grace period in seconds.
+        /// When setting, automatically converts to GraceValue and GraceTimeUnit.
+        /// </summary>
+        [Obsolete("Use GraceValue and GraceTimeUnit instead")]
+        public int GraceSeconds
+        {
+            get => GetTotalSeconds();
+            set
+            {
+                GraceValue = value;
+                GraceTimeUnit = TimeUnit.Seconds;
+            }
+        }
         
         /// <summary>
         /// The power management action to perform when the display turns off and grace period expires.
@@ -52,12 +89,62 @@ namespace SleepOnDisplayOff
         /// </summary>
         public static string Dir => Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-            "SleepOnDisplayOff");
+            "OnDisplayOff");
             
         /// <summary>
         /// Gets the full path to the settings JSON file.
         /// </summary>
         public static string PathJson => Path.Combine(Dir, "settings.json");
+
+        /// <summary>
+        /// Converts the current grace period value and unit to total seconds.
+        /// </summary>
+        /// <returns>Total seconds for the grace period</returns>
+        public int GetTotalSeconds()
+        {
+            return GraceTimeUnit switch
+            {
+                TimeUnit.Milliseconds => GraceValue / 1000,
+                TimeUnit.Seconds => GraceValue,
+                TimeUnit.Minutes => GraceValue * 60,
+                TimeUnit.Hours => GraceValue * 3600,
+                TimeUnit.Days => GraceValue * 86400,
+                _ => GraceValue
+            };
+        }
+
+        /// <summary>
+        /// Sets the grace period from a total number of seconds, automatically choosing the best unit.
+        /// </summary>
+        /// <param name="totalSeconds">Total seconds for the grace period</param>
+        public void SetGracePeriod(int totalSeconds)
+        {
+            if (totalSeconds == 0)
+            {
+                GraceValue = 0;
+                GraceTimeUnit = TimeUnit.Seconds;
+            }
+            else if (totalSeconds % 86400 == 0)
+            {
+                GraceValue = totalSeconds / 86400;
+                GraceTimeUnit = TimeUnit.Days;
+            }
+            else if (totalSeconds % 3600 == 0)
+            {
+                GraceValue = totalSeconds / 3600;
+                GraceTimeUnit = TimeUnit.Hours;
+            }
+            else if (totalSeconds % 60 == 0)
+            {
+                GraceValue = totalSeconds / 60;
+                GraceTimeUnit = TimeUnit.Minutes;
+            }
+            else
+            {
+                GraceValue = totalSeconds;
+                GraceTimeUnit = TimeUnit.Seconds;
+            }
+        }
 
         /// <summary>
         /// Loads application settings from the JSON configuration file.

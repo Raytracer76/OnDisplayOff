@@ -11,7 +11,7 @@ Many modern applications and browsers prevent Windows from sleeping even when th
 ## Features
 
 - **Multiple Power Actions**: Sleep, Hibernate, Shutdown, or Restart
-- **Configurable Grace Period**: 0-600 seconds delay before action (0 = immediate)
+- **Configurable Grace Period**: Customizable delay before action with multiple time units (0 = immediate)
 - **System Tray Interface**: Runs quietly in the background with easy access
 - **Startup Integration**: Optional automatic startup with Windows
 - **Pause/Resume**: Temporarily disable without closing the application
@@ -34,7 +34,7 @@ When either event indicates the display has turned off, OnDisplayOff starts a co
 4. Configure your preferred action and grace period
 
 ### Settings
-- **Grace Period**: Seconds to wait after display turns off (0-600)
+- **Grace Period**: Time to wait after display turns off (supports milliseconds, seconds, minutes, hours, days)
 - **Action**: Sleep, Hibernate, Shutdown, or Restart
 - **Start at Logon**: Automatically start with Windows
 - **Paused**: Temporarily disable power actions
@@ -95,7 +95,7 @@ Shutdown and Restart actions require elevated privileges. The application handle
 - **Language**: C# with .NET 8
 - **UI Framework**: Windows Forms
 - **Power Management**: Native Windows APIs (User32, Powrprof, Advapi32)
-- **Settings Storage**: JSON in `%AppData%\SleepOnDisplayOff\settings.json`
+- **Settings Storage**: JSON in `%AppData%\OnDisplayOff\settings.json`
 - **Single Instance**: Uses named mutex to prevent multiple instances
 
 ## License

@@ -2,10 +2,10 @@ using System;
 using System.Threading;
 using System.Windows.Forms;
 
-namespace SleepOnDisplayOff
+namespace OnDisplayOff
 {
     /// <summary>
-    /// Entry point for the SleepOnDisplayOff application.
+    /// Entry point for the OnDisplayOff application.
     /// This class handles application initialization and ensures only one instance runs at a time.
     /// </summary>
     internal static class Program
@@ -19,7 +19,7 @@ namespace SleepOnDisplayOff
         {
             // Create a named mutex to prevent multiple instances of the application
             // The mutex is automatically released when the application exits
-            using var mutex = new Mutex(true, "SleepOnDisplayOff_SingleInstance", out bool isNew);
+            using var mutex = new Mutex(true, "OnDisplayOff_SingleInstance", out bool isNew);
             
             // If another instance is already running, exit immediately
             if (!isNew) return;

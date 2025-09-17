@@ -2,7 +2,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 
-namespace SleepOnDisplayOff
+namespace OnDisplayOff
 {
     /// <summary>
     /// Manages Windows Task Scheduler integration for automatic startup at user logon.
@@ -11,7 +11,7 @@ namespace SleepOnDisplayOff
     internal static class StartupTask
     {
         /// <summary>Name of the scheduled task in Windows Task Scheduler</summary>
-        private const string TaskName = "SleepOnDisplayOff";
+        private const string TaskName = "OnDisplayOff";
         /// <summary>
         /// Creates or updates the Windows scheduled task for automatic startup.
         /// The task is configured to run at user logon with highest privileges.

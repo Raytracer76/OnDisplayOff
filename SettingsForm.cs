@@ -1,7 +1,7 @@
 using System;
 using System.Windows.Forms;
 
-namespace SleepOnDisplayOff
+namespace OnDisplayOff
 {
     /// <summary>
     /// Settings dialog form that allows users to configure application behavior.
@@ -9,8 +9,11 @@ namespace SleepOnDisplayOff
     /// </summary>
     public sealed class SettingsForm : Form
     {
-        /// <summary>Numeric input for grace period in seconds (0-600)</summary>
-        private NumericUpDown nudGrace = new() { Minimum = 0, Maximum = 600, Value = 60, Width = 100 };
+        /// <summary>Numeric input for grace period value (no maximum limit)</summary>
+        private NumericUpDown nudGrace = new() { Minimum = 0, Maximum = int.MaxValue, Value = 60, Width = 100 };
+
+        /// <summary>Dropdown for selecting time unit (milliseconds, seconds, minutes, hours, days)</summary>
+        private ComboBox cbTimeUnit = new() { DropDownStyle = ComboBoxStyle.DropDownList, Width = 120 };
         
         /// <summary>Dropdown for selecting power action (Sleep/Hibernate/Shutdown/Restart)</summary>
         private ComboBox cbAction = new() { DropDownStyle = ComboBoxStyle.DropDownList, Width = 180 };
@@ -39,7 +42,7 @@ namespace SleepOnDisplayOff
         public SettingsForm(AppSettings current)
         {
             // Configure form appearance
-            Text = "SleepOnDisplayOff — Settings";
+            Text = "OnDisplayOff — Settings";
             FormBorderStyle = FormBorderStyle.FixedDialog;
             StartPosition = FormStartPosition.CenterScreen;
             MaximizeBox = MinimizeBox = false;
@@ -48,8 +51,12 @@ namespace SleepOnDisplayOff
             cbAction.Items.AddRange(Enum.GetNames(typeof(SleepAction)));
             cbAction.SelectedItem = current.Action.ToString();
             
-            // Set grace period (clamp to valid range)
-            nudGrace.Value = Math.Min(Math.Max(current.GraceSeconds, 0), 600);
+            // Populate time unit dropdown with enum values
+            cbTimeUnit.Items.AddRange(Enum.GetNames(typeof(TimeUnit)));
+            cbTimeUnit.SelectedItem = current.GraceTimeUnit.ToString();
+
+            // Set grace period value
+            nudGrace.Value = Math.Max(current.GraceValue, 0);
             
             // Set checkbox states from current settings
             chkStartup.Checked = current.StartAtLogon;
@@ -61,8 +68,13 @@ namespace SleepOnDisplayOff
             table.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
 
             // Add controls to table layout
-            table.Controls.Add(new Label(){Text="Grace (seconds):", AutoSize=true}, 0, 0);
-            table.Controls.Add(nudGrace, 1, 0);
+            table.Controls.Add(new Label(){Text="Grace period:", AutoSize=true}, 0, 0);
+
+            // Create a panel for grace period controls (value + unit)
+            var gracePanel = new FlowLayoutPanel { FlowDirection = FlowDirection.LeftToRight, AutoSize = true, Margin = Padding.Empty };
+            gracePanel.Controls.Add(nudGrace);
+            gracePanel.Controls.Add(cbTimeUnit);
+            table.Controls.Add(gracePanel, 1, 0);
             table.Controls.Add(new Label(){Text="Action:", AutoSize=true}, 0, 1);
             table.Controls.Add(cbAction, 1, 1);
             table.Controls.Add(chkStartup, 1, 2);
@@ -85,7 +97,8 @@ namespace SleepOnDisplayOff
             {
                 Result = new AppSettings
                 {
-                    GraceSeconds = (int)nudGrace.Value,
+                    GraceValue = (int)nudGrace.Value,
+                    GraceTimeUnit = Enum.Parse<TimeUnit>(cbTimeUnit.SelectedItem!.ToString()!),
                     Action = Enum.Parse<SleepAction>(cbAction.SelectedItem!.ToString()!),
                     StartAtLogon = chkStartup.Checked,
                     Paused = chkPaused.Checked

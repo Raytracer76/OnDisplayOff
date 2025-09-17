@@ -3,9 +3,9 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
-using static SleepOnDisplayOff.PowerInterop;
+using static OnDisplayOff.PowerInterop;
 
-namespace SleepOnDisplayOff
+namespace OnDisplayOff
 {
     /// <summary>
     /// Main application form that runs as a system tray application.
@@ -55,12 +55,12 @@ namespace SleepOnDisplayOff
             
             // Set grace timer interval from settings (convert seconds to milliseconds)
             // Timer interval must be > 0, so use 1ms minimum (won't be used when grace is 0)
-            _graceTimer.Interval = Math.Max(1, _cfg.GraceSeconds) * 1000;
+            _graceTimer.Interval = Math.Max(1, _cfg.GetTotalSeconds()) * 1000;
 
             // Set up system tray icon and context menu
             _tray.Icon = SystemIcons.Application;
             _tray.Visible = true;
-            _tray.Text = "SleepOnDisplayOff";
+            _tray.Text = "OnDisplayOff";
             
             // Create context menu with current pause state
             var menu = new ContextMenuStrip();
@@ -99,7 +99,7 @@ namespace SleepOnDisplayOff
             if (_cfg.Paused) _graceTimer.Stop();
             
             // Show balloon notification to user
-            _tray.BalloonTipTitle = "SleepOnDisplayOff";
+            _tray.BalloonTipTitle = "OnDisplayOff";
             _tray.BalloonTipText = _cfg.Paused ? "Paused" : "Resumed";
             _tray.ShowBalloonTip(2000);
         }
@@ -119,7 +119,7 @@ namespace SleepOnDisplayOff
                 
                 // Update grace timer interval
                 // Timer interval must be > 0, so use 1ms minimum (won't be used when grace is 0)
-                _graceTimer.Interval = Math.Max(1, _cfg.GraceSeconds) * 1000;
+                _graceTimer.Interval = Math.Max(1, _cfg.GetTotalSeconds()) * 1000;
                 
                 // Update Windows startup task
                 ApplySchedulerState(_cfg.StartAtLogon);
@@ -177,7 +177,7 @@ namespace SleepOnDisplayOff
         /// <param name="reason">Diagnostic string describing why the grace period started</param>
         private void StartGrace(string reason)
         {
-            if (_cfg.GraceSeconds == 0)
+            if (_cfg.GetTotalSeconds() == 0)
             {
                 // No grace period - execute action immediately
                 Debug.WriteLine($"[SOFF] Screen OFF → immediate action ({reason})");
@@ -186,12 +186,12 @@ namespace SleepOnDisplayOff
             }
             
             // Start grace period countdown
-            Debug.WriteLine($"[SOFF] Screen OFF → grace {_cfg.GraceSeconds}s ({reason})");
+            Debug.WriteLine($"[SOFF] Screen OFF → grace {_cfg.GetTotalSeconds()}s ({reason})");
             _graceTimer.Stop();  // Stop any existing timer
             _graceTimer.Start(); // Start fresh countdown
             
             // Update tray tooltip to show countdown
-            _tray.Text = $"SleepOnDisplayOff (T-{_cfg.GraceSeconds}s)";
+            _tray.Text = $"OnDisplayOff (T-{_cfg.GetTotalSeconds()}s)";
         }
 
         /// <summary>
@@ -206,7 +206,7 @@ namespace SleepOnDisplayOff
                 _graceTimer.Stop();
                 
                 // Reset tray tooltip to normal text
-                _tray.Text = "SleepOnDisplayOff";
+                _tray.Text = "OnDisplayOff";
             }
         }
 
@@ -219,7 +219,7 @@ namespace SleepOnDisplayOff
             _graceTimer.Stop();
             
             // Reset tray tooltip
-            _tray.Text = "SleepOnDisplayOff";
+            _tray.Text = "OnDisplayOff";
             
             // Execute the configured power action
             ExecuteAction(_cfg.Action);
