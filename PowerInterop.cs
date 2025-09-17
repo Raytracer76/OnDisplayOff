@@ -43,6 +43,9 @@ namespace OnDisplayOff
         [DllImport("user32.dll", SetLastError = true)]
         static extern bool ExitWindowsEx(uint uFlags, uint dwReason);
 
+        [DllImport("user32.dll", SetLastError = true)]
+        static extern bool LockWorkStation();
+
         [StructLayout(LayoutKind.Sequential)] struct LUID { public uint LowPart; public int HighPart; }
         [StructLayout(LayoutKind.Sequential)] struct LUID_AND_ATTRIBUTES { public LUID Luid; public uint Attributes; }
         [StructLayout(LayoutKind.Sequential)] struct TOKEN_PRIVILEGES { public uint PrivilegeCount; public LUID_AND_ATTRIBUTES Privileges; }
@@ -79,10 +82,18 @@ namespace OnDisplayOff
                 switch (action)
                 {
                     case SleepAction.Hibernate:
+                        // Lock workstation first to preserve session state
+                        LockWorkStation();
+                        // Small delay to allow lock to complete
+                        System.Threading.Thread.Sleep(500);
                         // Requires: powercfg /hibernate on
                         SetSuspendState(true, false, false);
                         break;
                     case SleepAction.Sleep:
+                        // Lock workstation first to preserve session state
+                        LockWorkStation();
+                        // Small delay to allow lock to complete
+                        System.Threading.Thread.Sleep(500);
                         SetSuspendState(false, false, false);
                         break;
                     case SleepAction.Shutdown:
