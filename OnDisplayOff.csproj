@@ -6,6 +6,47 @@
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+
+    <!-- Assembly and package metadata -->
+    <AssemblyTitle>OnDisplayOff</AssemblyTitle>
+    <AssemblyDescription>Automatically perform power actions when your display turns off</AssemblyDescription>
+    <AssemblyCompany>Raytracer76</AssemblyCompany>
+    <AssemblyProduct>OnDisplayOff</AssemblyProduct>
+    <AssemblyCopyright>Copyright © 2025 Raytracer76</AssemblyCopyright>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <FileVersion>1.0.0.0</FileVersion>
+
+    <!-- NuGet package metadata -->
+    <PackageId>OnDisplayOff</PackageId>
+    <PackageVersion>1.0.0</PackageVersion>
+    <Authors>Raytracer76</Authors>
+    <Description>Automatically perform power actions when your display turns off</Description>
+    <PackageProjectUrl>https://github.com/Raytracer76/OnDisplayOff</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/Raytracer76/OnDisplayOff.git</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageTags>windows;power-management;display;sleep;hibernate;shutdown;system-tray</PackageTags>
+    <PackageReleaseNotes>Initial release with core power management functionality</PackageReleaseNotes>
+
+    <!-- Build configuration -->
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+
+    <!-- Application icon -->
+    <ApplicationIcon>icon.ico</ApplicationIcon>
+
+    <!-- Code analysis -->
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <AnalysisLevel>latest</AnalysisLevel>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <WarningsAsErrors />
+    <WarningsNotAsErrors />
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
 
 </Project>

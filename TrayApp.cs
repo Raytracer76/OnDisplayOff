@@ -1,6 +1,8 @@
 using System;
 using System.Diagnostics;
 using System.Drawing;
+using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using static OnDisplayOff.PowerInterop;
@@ -66,7 +68,7 @@ namespace OnDisplayOff
             _graceTimer.Interval = Math.Max(1, _cfg.GetTotalSeconds()) * 1000;
 
             // Set up system tray icon and context menu
-            _tray.Icon = SystemIcons.Application;
+            _tray.Icon = LoadAppIcon();
             _tray.Visible = true;
             _tray.Text = "OnDisplayOff";
             
@@ -277,6 +279,44 @@ namespace OnDisplayOff
                     _tray.ShowBalloonTip(3000);
                 }
             }
+        }
+
+        /// <summary>
+        /// Loads the application icon from the embedded resource or file system.
+        /// Falls back to the system application icon if the custom icon cannot be loaded.
+        /// </summary>
+        /// <returns>The application icon to use for the system tray</returns>
+        private Icon LoadAppIcon()
+        {
+            try
+            {
+                // Try to load from file system first
+                if (File.Exists("icon.ico"))
+                {
+                    return new Icon("icon.ico");
+                }
+
+                // Try to load from embedded resources
+                var assembly = System.Reflection.Assembly.GetExecutingAssembly();
+                var resourceName = assembly.GetManifestResourceNames()
+                    .FirstOrDefault(name => name.EndsWith("icon.ico"));
+
+                if (resourceName != null)
+                {
+                    using var stream = assembly.GetManifestResourceStream(resourceName);
+                    if (stream != null)
+                    {
+                        return new Icon(stream);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[ICON] Failed to load custom icon: {ex.Message}");
+            }
+
+            // Fallback to system icon
+            return SystemIcons.Application;
         }
 
         /// <summary>

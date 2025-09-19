@@ -1,0 +1,53 @@
+name: Release
+
+on:
+  push:
+    tags: [ 'v*' ]
+
+jobs:
+  release:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+
+    - name: Restore dependencies
+      run: dotnet restore
+
+    - name: Build Release
+      run: dotnet build --configuration Release
+
+    - name: Publish Self-Contained (x64)
+      run: dotnet publish --configuration Release --runtime win-x64 --self-contained true --output ./publish/win-x64
+
+    - name: Publish Self-Contained (x86)
+      run: dotnet publish --configuration Release --runtime win-x86 --self-contained true --output ./publish/win-x86
+
+    - name: Publish Framework-Dependent
+      run: dotnet publish --configuration Release --output ./publish/framework-dependent
+
+    - name: Create ZIP archives
+      shell: pwsh
+      run: |
+        Compress-Archive -Path ./publish/win-x64/* -DestinationPath OnDisplayOff-win-x64.zip
+        Compress-Archive -Path ./publish/win-x86/* -DestinationPath OnDisplayOff-win-x86.zip
+        Compress-Archive -Path ./publish/framework-dependent/* -DestinationPath OnDisplayOff-framework-dependent.zip
+
+    - name: Create Release
+      uses: softprops/action-gh-release@v2
+      with:
+        files: |
+          OnDisplayOff-win-x64.zip
+          OnDisplayOff-win-x86.zip
+          OnDisplayOff-framework-dependent.zip
+        generate_release_notes: true
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
