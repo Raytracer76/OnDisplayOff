@@ -58,6 +58,7 @@ namespace OnDisplayOff
         /// When setting, automatically converts to GraceValue and GraceTimeUnit.
         /// </summary>
         [Obsolete("Use GraceValue and GraceTimeUnit instead")]
+        [System.Text.Json.Serialization.JsonIgnore]
         public int GraceSeconds
         {
             get => GetTotalSeconds();
