@@ -290,7 +290,16 @@ namespace OnDisplayOff
         {
             try
             {
-                // Try to load from file system first
+                // Try to load from file system first - use application directory
+                var appDir = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+                var iconPath = Path.Combine(appDir ?? "", "icon.ico");
+
+                if (File.Exists(iconPath))
+                {
+                    return new Icon(iconPath);
+                }
+
+                // Also try current directory as fallback
                 if (File.Exists("icon.ico"))
                 {
                     return new Icon("icon.ico");
