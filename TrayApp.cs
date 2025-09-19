@@ -49,10 +49,18 @@ namespace OnDisplayOff
         {
             // Load application settings from disk
             _cfg = AppSettings.Load();
-            
-            // Configure Windows startup task based on settings
-            ApplySchedulerState(_cfg.StartAtLogon);
-            
+
+            // Verify and synchronize the startup task state with settings
+            // This ensures the actual startup state matches the saved setting
+            bool taskExists = StartupTask.Exists();
+            Debug.WriteLine($"[STARTUP] Setting: {_cfg.StartAtLogon}, Task exists: {taskExists}");
+
+            if (_cfg.StartAtLogon != taskExists)
+            {
+                Debug.WriteLine($"[STARTUP] Mismatch detected, applying setting: {_cfg.StartAtLogon}");
+                ApplySchedulerState(_cfg.StartAtLogon);
+            }
+
             // Set grace timer interval from settings (convert seconds to milliseconds)
             // Timer interval must be > 0, so use 1ms minimum (won't be used when grace is 0)
             _graceTimer.Interval = Math.Max(1, _cfg.GetTotalSeconds()) * 1000;
@@ -113,17 +121,25 @@ namespace OnDisplayOff
             using var dlg = new SettingsForm(_cfg);
             if (dlg.ShowDialog() == DialogResult.OK)
             {
+                var newSettings = dlg.Result ?? new AppSettings();
+
+                // Check if startup setting changed to avoid unnecessary task operations
+                bool startupChanged = _cfg.StartAtLogon != newSettings.StartAtLogon;
+
                 // Apply the new settings
-                _cfg = dlg.Result ?? new AppSettings();
+                _cfg = newSettings;
                 _cfg.Save();
-                
+
                 // Update grace timer interval
                 // Timer interval must be > 0, so use 1ms minimum (won't be used when grace is 0)
                 _graceTimer.Interval = Math.Max(1, _cfg.GetTotalSeconds()) * 1000;
-                
-                // Update Windows startup task
-                ApplySchedulerState(_cfg.StartAtLogon);
-                
+
+                // Update Windows startup task only if the setting changed
+                if (startupChanged)
+                {
+                    ApplySchedulerState(_cfg.StartAtLogon);
+                }
+
                 // Update pause menu item text
                 pauseItem.Text = _cfg.Paused ? "Resume" : "Pause";
             }
@@ -234,15 +250,32 @@ namespace OnDisplayOff
         {
             try
             {
-                if (enable) 
+                Debug.WriteLine($"[STARTUP] Applying scheduler state: {enable}");
+                if (enable)
+                {
                     StartupTask.CreateOrUpdate();
-                else 
+                    Debug.WriteLine("[STARTUP] CreateOrUpdate completed");
+                }
+                else
+                {
                     StartupTask.Delete();
-            } 
-            catch 
-            { 
-                // Ignore errors - startup task management is best-effort
+                    Debug.WriteLine("[STARTUP] Delete completed");
+                }
+            }
+            catch (Exception ex)
+            {
+                // Log the error for debugging but continue - startup task management is best-effort
                 // May fail due to insufficient privileges or group policy restrictions
+                Debug.WriteLine($"[STARTUP] Error managing scheduled task: {ex.Message}");
+
+                // Show a balloon notification to inform the user if startup task fails
+                if (enable)
+                {
+                    _tray.BalloonTipTitle = "OnDisplayOff - Startup Warning";
+                    _tray.BalloonTipText = "Could not create startup task. May require elevated privileges.";
+                    _tray.BalloonTipIcon = ToolTipIcon.Warning;
+                    _tray.ShowBalloonTip(3000);
+                }
             }
         }
 
