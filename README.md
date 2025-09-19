@@ -28,8 +28,8 @@ When either event indicates the display has turned off, OnDisplayOff starts a co
 ## Usage
 
 ### Installation & Setup
-1. Build the project or download a release
-2. Run `OnDisplayOff.exe`
+1. Download the self-contained executable from releases or build from source
+2. Run `OnDisplayOff.exe` (no .NET installation required)
 3. Double-click the system tray icon to open settings
 4. Configure your preferred action and grace period
 
@@ -46,9 +46,9 @@ When either event indicates the display has turned off, OnDisplayOff starts a co
 
 ## Requirements
 
-- **Platform**: Windows (any version supporting .NET 8)
-- **Framework**: .NET 8 Windows Desktop Runtime
-- **Architecture**: Any CPU, x64, or ARM64
+- **Platform**: Windows 10/11 (x64)
+- **Framework**: None - self-contained executable includes .NET runtime
+- **Architecture**: x64
 - **Privileges**: Standard user (Shutdown/Restart require elevation via scheduled task)
 
 ## Build Instructions
@@ -58,11 +58,14 @@ When either event indicates the display has turned off, OnDisplayOff starts a co
 git clone https://github.com/yourusername/OnDisplayOff.git
 cd OnDisplayOff
 
-# Build the project
+# Build framework-dependent version
 dotnet build -c Release
 
-# Run the application
-dotnet run
+# Build self-contained executable (recommended)
+dotnet publish -c Release -r win-x64 --self-contained
+
+# Run the self-contained version
+./bin/Release/net8.0-windows/win-x64/publish/OnDisplayOff.exe
 ```
 
 ## Special Considerations

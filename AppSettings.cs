@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace OnDisplayOff
 {
@@ -159,7 +160,7 @@ namespace OnDisplayOff
                 if (File.Exists(PathJson))
                 {
                     var json = File.ReadAllText(PathJson);
-                    return JsonSerializer.Deserialize<AppSettings>(json) ?? new AppSettings();
+                    return JsonSerializer.Deserialize(json, AppSettingsJsonContext.Default.AppSettings) ?? new AppSettings();
                 }
             }
             catch 
@@ -180,10 +181,20 @@ namespace OnDisplayOff
             Directory.CreateDirectory(Dir);
             
             // Serialize settings to formatted JSON for readability
-            var json = JsonSerializer.Serialize(this, new JsonSerializerOptions{ WriteIndented = true });
+            var json = JsonSerializer.Serialize(this, AppSettingsJsonContext.Default.AppSettings);
             
             // Write to the settings file
             File.WriteAllText(PathJson, json);
         }
+    }
+
+    /// <summary>
+    /// JSON source generation context for Native AOT compatibility
+    /// </summary>
+    [JsonSerializable(typeof(AppSettings))]
+    [JsonSerializable(typeof(SleepAction))]
+    [JsonSerializable(typeof(TimeUnit))]
+    internal partial class AppSettingsJsonContext : JsonSerializerContext
+    {
     }
 }

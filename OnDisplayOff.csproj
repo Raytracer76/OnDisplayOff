@@ -7,6 +7,12 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
 
+    <!-- Self-contained single file configuration -->
+    <PublishSingleFile>true</PublishSingleFile>
+    <SelfContained>true</SelfContained>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <IncludeAllContentForSelfExtract>true</IncludeAllContentForSelfExtract>
+
     <!-- Assembly and package metadata -->
     <AssemblyTitle>OnDisplayOff</AssemblyTitle>
     <AssemblyDescription>Automatically perform power actions when your display turns off</AssemblyDescription>
